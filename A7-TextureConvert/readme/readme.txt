@@ -51,3 +51,13 @@ Copyright
 ~~~~~~~~~
 
 PVRTexToolCLI: Copyright © Imagination Technologies Limited
+
+
+Changelog
+~~~~~~~~~
+
+Version 3.3
+- Updated PVRTexToolCLI
+
+Version 3.2
+- Initial release

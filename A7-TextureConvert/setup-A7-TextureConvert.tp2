@@ -1,0 +1,176 @@
+BACKUP ~A7-TextureConvert/backup~
+AUTHOR ~Argent77~
+VERSION ~3.2~
+
+ALWAYS
+  INCLUDE ~%MOD_FOLDER%/lib/a7_tools.tpa~
+  DEFINE_ACTION_FUNCTION a7_convert_pvrz
+  INT_VAR
+    square = 0
+    override_only = 0
+    // exclude_format_0 = 0    // Skip texture matching specified PVR pixel format code
+    // exclude_format_1 = 1
+    // ...
+  STR_VAR
+    format = ~~
+  BEGIN
+    ACTION_IF (NOT ~%format%~ STR_EQ ~~) BEGIN
+      OUTER_TEXT_SPRINT folder_base ~%MOD_FOLDER%/temp~
+      OUTER_TEXT_SPRINT folder_input ~%folder_base%/in~
+      OUTER_TEXT_SPRINT folder_output ~%folder_base%/out~
+      MKDIR ~%folder_input%~
+      MKDIR ~%folder_output%~
+
+      LAF GET_TOOL_BINARY
+      STR_VAR
+        tool_name = ~PVRTexToolCLI~
+      RET
+        tool_binary
+      END
+
+      OUTER_TEXT_SPRINT param_square ~-potcanvas +~
+      ACTION_IF (square) BEGIN
+        OUTER_TEXT_SPRINT param_square ~%param_square% -squarecanvas +~
+      END
+
+      OUTER_SET input_files = 0
+      COPY_EXISTING_REGEXP - ~.+\.pvrz~ ~override~
+        PATCH_IF (NOT override_only || FILE_EXISTS ~override/%SOURCE_FILE%~) BEGIN
+          TEXT_SPRINT EVAL ~input_files_%input_files%~ ~%SOURCE_RES%~
+          SET input_files += 1
+        END
+      BUT_ONLY
+
+      OUTER_FOR (idx = 0; idx < input_files; ++idx) BEGIN
+        OUTER_TEXT_SPRINT fileRes EVAL ~%input_files_%idx%%~
+        PRINT ~Converting %fileRes%.PVRZ...~
+        COPY_EXISTING + ~%fileRes%.PVRZ~ ~%folder_input%/%fileRes%.PVR~
+          READ_LONG 0 unc_size
+          DECOMPRESS_REPLACE_FILE 4 (BUFFER_LENGTH - 4) unc_size
+          READ_LONG 0x08 pixel_format
+        BUT_ONLY
+
+        // skip if texture format matches
+        OUTER_SET match = 0
+        OUTER_FOR (idx2 = 0; NOT match && VARIABLE_IS_SET EVAL "exclude_format_%idx2%"; ++idx2) BEGIN
+          OUTER_SET fmt = EVAL ~exclude_format_%idx2%~
+          ACTION_IF (fmt = pixel_format) BEGIN
+            OUTER_SET match = 1
+          END
+        END
+
+        ACTION_IF (NOT match) BEGIN
+          LAF EXECUTE_TOOL
+          INT_VAR
+            exec_type = 0
+          STR_VAR
+            tool_binary = EVAL ~%tool_binary%~
+            log_output = EVAL ~%folder_input%/%fileRes%.LOG~
+            arg_0 = EVAL ~-i "%folder_input%/%fileRes%.PVR"~
+            arg_1 = EVAL ~-o "%folder_output%/%fileRes%.PVR"~
+            arg_2 = EVAL ~-f %format%,UBN,lRGB~
+            arg_3 = EVAL ~%param_square%~
+          RET
+            command result
+          END
+          DELETE + ~%folder_input%/%fileRes%.PVR~
+
+          ACTION_IF (FILE_EXISTS ~%folder_input%/%fileRes%.LOG~) BEGIN
+            COPY - ~%folder_input%/%fileRes%.LOG~ ~%folder_input%/%fileRes%.LOG~
+              READ_ASCII 0 log (BUFFER_LENGTH)
+            DELETE + ~%folder_input%/%fileRes%.LOG~
+          END
+
+          ACTION_IF (FILE_EXISTS ~%folder_output%/%fileRes%.PVR~) BEGIN
+            COPY ~%folder_output%/%fileRes%.PVR~ ~override/%fileRes%.PVRZ~
+              READ_LONG 0x30 sizeMeta
+              PATCH_IF (sizeMeta) BEGIN
+                DELETE_BYTES 0x34 sizeMeta
+                WRITE_LONG 0x30 0
+              END
+              SET len = BUFFER_LENGTH
+              COMPRESS_REPLACE_FILE 0 len 6
+              INSERT_BYTES 0 4
+              WRITE_LONG 0 len
+            BUT_ONLY
+            DELETE + ~%folder_output%/%fileRes%.PVR~
+          END ELSE BEGIN
+            WARN ~File not converted: %fileRes%.PVR. Skipping...~
+          END
+        END ELSE BEGIN
+          DELETE + ~%folder_input%/%fileRes%.PVR~
+        END
+      END
+
+      DELETE + ~%folder_base%~
+    END
+  END
+END
+
+
+README ~A7-TextureConvert/readme/readme.txt~
+
+
+BEGIN ~PVRTC 2bpp: All game files~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 STR_VAR format = ~PVRTC1_2~ END
+
+BEGIN ~PVRTC 2bpp: All game files, alpha-blended files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_2~ END
+
+BEGIN ~PVRTC 2bpp: Override files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 STR_VAR format = ~PVRTC1_2~ END
+
+BEGIN ~PVRTC 2bpp: Override files only, alpha-blended files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_2~ END
+
+BEGIN ~PVRTC 4bpp: All game files (iOS recommended)~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 STR_VAR format = ~PVRTC1_4~ END
+
+BEGIN ~PVRTC 4bpp: All game files, alpha-blended files only (iOS recommended)~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_4~ END
+
+BEGIN ~PVRTC 4bpp: Override files only (iOS recommended)~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 STR_VAR format = ~PVRTC1_4~ END
+
+BEGIN ~PVRTC 4bpp: Override files only, alpha-blended files only (iOS recommended)~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_4~ END
+
+BEGIN ~ETC1: All game files~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 0 STR_VAR format = ~ETC1~ END
+
+BEGIN ~ETC1: All game files, alpha-blended files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~ETC1~ END
+
+BEGIN ~ETC1: Override files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 1 STR_VAR format = ~ETC1~ END
+
+BEGIN ~ETC1: Override files only, alpha-blended files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~ETC1~ END
+
+BEGIN ~ETC2: All game files~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 0 STR_VAR format = ~ETC2_RGBA~ END
+
+BEGIN ~ETC2: All game files, alpha-blended files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~ETC2_RGBA~ END
+
+BEGIN ~ETC2: Override files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 1 STR_VAR format = ~ETC2_RGBA~ END
+
+BEGIN ~ETC2: Override files only, alpha-blended files only~
+  SUBCOMPONENT ~Convert PVRZ files~
+  LAF a7_convert_pvrz INT_VAR square = 0 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~ETC2_RGBA~ END

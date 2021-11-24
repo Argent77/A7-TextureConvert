@@ -2,7 +2,7 @@
 ~ PVRZ Texture Converter ~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Version:    3.2
+Version:    3.3
 Author:     Argent77
 Download:   https://github.com/Argent77/A7-TextureConvert/releases
 

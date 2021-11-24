@@ -3,7 +3,7 @@
  * Note: Requires WeiDU v239 or later!                                                                 *
  *                                                                                                     *
  * Author: Argent77                                                                                    *
- * Version: 1.1                                                                                        *
+ * Version: 1.2                                                                                        *
  *******************************************************************************************************/
 
 /*
@@ -107,6 +107,9 @@
  *
  *
  * Changelog:
+ * v1.2:
+ * - Updated GET_TOOL_BINARY to try several fallback paths before returning an error.
+ *
  * v1.1:
  * - Added support for converting single input file in HANDLE_TILECONV and HANDLE_TILE2EE.
  * - Removed action function REMOVE_DIRECTORY. WeiDU's DELETE action offers the same functionality (since v239).
@@ -201,14 +204,24 @@ BEGIN
     OUTER_TEXT_SPRINT tool_name ~%tool_name%.exe~
   END
 
+  // 1st attempt: use arch-specific path
   ACTION_IF (~%SYSTEM_ARCH%~ STRING_EQUAL_CASE ~amd64~) BEGIN
     OUTER_TEXT_SPRINT tool_binary ~%tool_os_64_path%/%tool_name%~
   END ELSE ACTION_IF (~%SYSTEM_ARCH%~ STRING_EQUAL_CASE ~x86~) BEGIN
     OUTER_TEXT_SPRINT tool_binary ~%tool_os_32_path%/%tool_name%~
-  END ELSE BEGIN
+  END
+
+  // 2nd attempt: use platform-specific path
+  ACTION_IF (NOT FILE_EXISTS ~%tool_binary%~) BEGIN
     OUTER_TEXT_SPRINT tool_binary ~%tool_os_path%/%tool_name%~
   END
-  
+
+  // 3rd attempt: use default tool path
+  ACTION_IF (NOT FILE_EXISTS ~%tool_binary%~) BEGIN
+    OUTER_TEXT_SPRINT tool_binary ~%tool_path%/%tool_name%~
+  END
+
+  // no luck? return empty path
   ACTION_IF (NOT FILE_EXISTS ~%tool_binary%~) BEGIN
     OUTER_TEXT_SPRINT tool_binary ~~
   END
@@ -259,11 +272,9 @@ DEFINE_ACTION_FUNCTION EXECUTE_TOOL
     exec_type   = 0
   STR_VAR
     tool_binary = ~~
-    log_output  = ~~
     // arg_0, arg_1, ...
   RET
     command
-    result
 BEGIN
   // assembling list of arguments
   OUTER_TEXT_SPRINT params ~~
@@ -276,26 +287,19 @@ BEGIN
   END
 
   OUTER_TEXT_SPRINT command ~%tool_binary%%params%~
-  ACTION_IF NOT ~%log_output%~ STR_EQ ~~ BEGIN
-    OUTER_TEXT_SPRINT command ~%command% >%log_output% 2>&1~
-  END
 
   ACTION_IF (~%WEIDU_OS%~ STRING_EQUAL_CASE ~osx~ OR
              ~%WEIDU_OS%~ STRING_EQUAL_CASE ~unix~) BEGIN
     AT_NOW ~chmod +x %tool_binary%~
   END
 
-  OUTER_SET result = 0
-  ACTION_IF (exec_type = 0) BEGIN AT_NOW result ~%command%~ END
+  ACTION_IF (exec_type = 0) BEGIN AT_NOW ~%command%~ END
   ELSE ACTION_IF (exec_type = 1) BEGIN AT_EXIT ~%command%~ END
   ELSE ACTION_IF (exec_type = 2) BEGIN AT_UNINSTALL ~%command%~ END
-  ELSE ACTION_IF (exec_type = 3) BEGIN AT_INTERACTIVE_NOW result ~%command%~ END
+  ELSE ACTION_IF (exec_type = 3) BEGIN AT_INTERACTIVE_NOW ~%command%~ END
   ELSE ACTION_IF (exec_type = 4) BEGIN AT_INTERACTIVE_EXIT ~%command%~ END
   ELSE ACTION_IF (exec_type = 5) BEGIN AT_INTERACTIVE_UNINSTALL ~%command%~ END
-  ELSE BEGIN
-    OUTER_SET result = "-1"
-    FAIL ~ERROR: Invalid execution type specified~
-  END
+  ELSE BEGIN FAIL ~ERROR: Invalid execution type specified~ END
 END
 
 

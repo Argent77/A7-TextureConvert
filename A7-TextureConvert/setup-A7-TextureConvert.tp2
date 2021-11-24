@@ -1,6 +1,6 @@
 BACKUP ~A7-TextureConvert/backup~
 AUTHOR ~Argent77~
-VERSION ~3.2~
+VERSION ~3.3~
 
 ALWAYS
   INCLUDE ~%MOD_FOLDER%/lib/a7_tools.tpa~
@@ -65,38 +65,24 @@ ALWAYS
             exec_type = 0
           STR_VAR
             tool_binary = EVAL ~%tool_binary%~
-            log_output = EVAL ~%folder_input%/%fileRes%.LOG~
             arg_0 = EVAL ~-i "%folder_input%/%fileRes%.PVR"~
             arg_1 = EVAL ~-o "%folder_output%/%fileRes%.PVR"~
             arg_2 = EVAL ~-f %format%,UBN,lRGB~
             arg_3 = EVAL ~%param_square%~
-          RET
-            command result
           END
           DELETE + ~%folder_input%/%fileRes%.PVR~
-
-          ACTION_IF (FILE_EXISTS ~%folder_input%/%fileRes%.LOG~) BEGIN
-            COPY - ~%folder_input%/%fileRes%.LOG~ ~%folder_input%/%fileRes%.LOG~
-              READ_ASCII 0 log (BUFFER_LENGTH)
-            DELETE + ~%folder_input%/%fileRes%.LOG~
-          END
-
-          ACTION_IF (FILE_EXISTS ~%folder_output%/%fileRes%.PVR~) BEGIN
-            COPY ~%folder_output%/%fileRes%.PVR~ ~override/%fileRes%.PVRZ~
-              READ_LONG 0x30 sizeMeta
-              PATCH_IF (sizeMeta) BEGIN
-                DELETE_BYTES 0x34 sizeMeta
-                WRITE_LONG 0x30 0
-              END
-              SET len = BUFFER_LENGTH
-              COMPRESS_REPLACE_FILE 0 len 6
-              INSERT_BYTES 0 4
-              WRITE_LONG 0 len
-            BUT_ONLY
-            DELETE + ~%folder_output%/%fileRes%.PVR~
-          END ELSE BEGIN
-            WARN ~File not converted: %fileRes%.PVR. Skipping...~
-          END
+          COPY ~%folder_output%/%fileRes%.PVR~ ~override/%fileRes%.PVRZ~
+            READ_LONG 0x30 sizeMeta
+            PATCH_IF (sizeMeta) BEGIN
+              DELETE_BYTES 0x34 sizeMeta
+              WRITE_LONG 0x30 0
+            END
+            SET len = BUFFER_LENGTH
+            COMPRESS_REPLACE_FILE 0 len 6
+            INSERT_BYTES 0 4
+            WRITE_LONG 0 len
+          BUT_ONLY
+          DELETE + ~%folder_output%/%fileRes%.PVR~
         END ELSE BEGIN
           DELETE + ~%folder_input%/%fileRes%.PVR~
         END
@@ -106,9 +92,6 @@ ALWAYS
     END
   END
 END
-
-
-README ~A7-TextureConvert/readme/readme.txt~
 
 
 BEGIN ~PVRTC 2bpp: All game files~

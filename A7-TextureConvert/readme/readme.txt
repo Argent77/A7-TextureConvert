@@ -2,7 +2,7 @@
 ~ PVRZ Texture Converter ~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Version:    3.3
+Version:    3.4
 Author:     Argent77
 Download:   https://github.com/Argent77/A7-TextureConvert/releases
 
@@ -55,6 +55,9 @@ PVRTexToolCLI: Copyright © Imagination Technologies Limited
 
 Changelog
 ~~~~~~~~~
+
+Version 3.4
+- Updated PVRTexToolCLI (win/linux: 2024_R2, macOS: 2023_R1)
 
 Version 3.3
 - Updated PVRTexToolCLI

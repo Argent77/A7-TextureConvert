@@ -1,6 +1,6 @@
 BACKUP ~A7-TextureConvert/backup~
 AUTHOR ~Argent77~
-VERSION ~3.3~
+VERSION ~3.4~
 
 ALWAYS
   INCLUDE ~%MOD_FOLDER%/lib/a7_tools.tpa~

@@ -96,35 +96,35 @@ END
 
 BEGIN ~PVRTC 2bpp: All game files~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 STR_VAR format = ~PVRTC1_2~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 STR_VAR format = ~PVRTCI_2BPP_RGBA~ END
 
 BEGIN ~PVRTC 2bpp: All game files, alpha-blended files only~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_2~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~PVRTCI_2BPP_RGBA~ END
 
 BEGIN ~PVRTC 2bpp: Override files only~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 STR_VAR format = ~PVRTC1_2~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 STR_VAR format = ~PVRTCI_2BPP_RGBA~ END
 
 BEGIN ~PVRTC 2bpp: Override files only, alpha-blended files only~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_2~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~PVRTCI_2BPP_RGBA~ END
 
 BEGIN ~PVRTC 4bpp: All game files (iOS recommended)~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 STR_VAR format = ~PVRTC1_4~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 STR_VAR format = ~PVRTCI_4BPP_RGBA~ END
 
 BEGIN ~PVRTC 4bpp: All game files, alpha-blended files only (iOS recommended)~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_4~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 0 exclude_format_0 = 7 STR_VAR format = ~PVRTCI_4BPP_RGBA~ END
 
 BEGIN ~PVRTC 4bpp: Override files only (iOS recommended)~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 STR_VAR format = ~PVRTC1_4~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 STR_VAR format = ~PVRTCI_4BPP_RGBA~ END
 
 BEGIN ~PVRTC 4bpp: Override files only, alpha-blended files only (iOS recommended)~
   SUBCOMPONENT ~Convert PVRZ files~
-  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~PVRTC1_4~ END
+  LAF a7_convert_pvrz INT_VAR square = 1 override_only = 1 exclude_format_0 = 7 STR_VAR format = ~PVRTCI_4BPP_RGBA~ END
 
 BEGIN ~ETC1: All game files~
   SUBCOMPONENT ~Convert PVRZ files~
